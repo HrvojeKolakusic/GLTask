@@ -1,5 +1,13 @@
 package task.algorithm;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,18 +16,55 @@ import java.util.Map.Entry;
 
 public class LogicTask {
 
-	public static String start() {
+	private static String outputString;
+	private static int globalCount;
+	private static int totalCount;
+	private static Map<String, Integer> mapa;
+	
+	
+	public static String start(boolean direct, String input) {
 		
-		String input = "I love to work in global logic!";
+		if (input.length() == 0) return "Error, empty input";
+		
+		globalCount = 0;
+		totalCount = 0;
+		mapa = new HashMap<>();
+		
+		if (direct) {
+			algorithm(input);
+			return prepareOutput();
+		}
+		else {
+			try {
+				Path path = Paths.get(input);
+				if (!Files.exists(path)) return "Error, file not found";
+				BufferedReader br = new BufferedReader(
+						new InputStreamReader(
+								new BufferedInputStream(
+										new FileInputStream(path.toString()))));
+				
+				String line;
+				while ((line=br.readLine()) != null) {
+					algorithm(line);
+				}
+				
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+		}
+
+		return prepareOutput();
+
+	}
+	
+	private static void algorithm(String input) {
+		
 		String[] split = input.split(" ");
-		String output = "";
-		
-		int globalCount = 0;
-		int totalCount = 0;
-		Map<String, Integer> mapa = new HashMap<>();
 		
 		for (String x : split) {
-			
 			
 			int localCount = 0;
 			boolean[] containsLogic = new boolean[5];
@@ -64,6 +109,12 @@ public class LogicTask {
 			totalCount += trueLen;
 		}
 		
+		return;
+	}
+	
+	private static String prepareOutput() {
+		
+		outputString = "";
 		Map<String, Double> freq = new HashMap<>();
 		for (String k : mapa.keySet()) {
 			freq.put(k, (double)mapa.get(k)/globalCount);
@@ -73,20 +124,14 @@ public class LogicTask {
 		sorted.sort(Entry.comparingByValue());
 		
 		for (Entry<String, Double> x : sorted) {
-			System.out.println(x.getKey() + " = " + Math.round(freq.get(x.getKey())*100.0)/100.0
-			+ " (" + mapa.get(x.getKey()) + "/" + globalCount + ")");
-			output += x.getKey() + " = " + Math.round(freq.get(x.getKey())*100.0)/100.0
+			outputString += x.getKey() + " = " + Math.round(freq.get(x.getKey())*100.0)/100.0
 					+ " (" + mapa.get(x.getKey()) + "/" + globalCount + ")" + "\n";
 		}
 		
-		
-		System.out.println("Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
-				+ " (" + globalCount + "/" + totalCount + ")");
-		output += "Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
+		outputString += "Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
 				+ " (" + globalCount + "/" + totalCount + ")" + "\n";
 		
-		return output;
-
+		return outputString;
 	}
 	
 	private static String generateKey(boolean[] containsLogic, int count) {
