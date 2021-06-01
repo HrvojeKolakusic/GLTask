@@ -16,25 +16,39 @@ import java.util.Map.Entry;
 
 public class LogicTask {
 
-	private static String outputString;
-	private static int globalCount;
-	private static int totalCount;
-	private static Map<String, Integer> mapa;
+	private static String outputString;			// output string
+	private static int globalCount;				// total number of characters in the input from the chars list
+	private static int totalCount;				// total number of alphanumeric characters in the input
+	private static Map<String, Integer> mapa; 	// map that stores the data needed to generate an output
+	private static ArrayList<Character> chars;	// list that stores the characters the program has to look for and count
 	
-	
-	public static String start(boolean direct, String input) {
+	/**
+	 * responses to the Start button and starts the algorithm
+	 * @param direct boolean to check the type of input
+	 * @param input direct input or path to file
+	 * @param charList list of characters to look for and count
+	 * @return output string
+	 */
+	public static String start(boolean direct, String input, String charList) {
 		
 		if (input.length() == 0) return "Error, empty input";
 		
 		globalCount = 0;
 		totalCount = 0;
 		mapa = new HashMap<>();
+		chars = new ArrayList<>();
+		
+		String[] split = charList.split(" ");
+		for (String c : split) {
+			chars.add(c.charAt(0));
+		}		
 		
 		if (direct) {
 			algorithm(input);
+			if (totalCount == 0) return "There is no alphanumeric characters in the input";
+			if (globalCount == 0) return "There is no characters from the list in the input";
 			return prepareOutput();
-		}
-		else {
+		} else {
 			try {
 				Path path = Paths.get(input);
 				if (!Files.exists(path)) return "Error, file not found";
@@ -48,18 +62,25 @@ public class LogicTask {
 					algorithm(line);
 				}
 				
+				br.close();
+				
+				if (totalCount == 0) return "There is no alphanumeric chars in the input";
+				if (globalCount == 0) return "There is no chars from the list in the input";
+				return prepareOutput();
 				
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.exit(-1);
+				return "Exception error!";
 			}
 			
 		}
 
-		return prepareOutput();
-
 	}
 	
+	/**
+	 * looks for and counts the combinations of characters  from the chars list
+	 * @param input string
+	 */
 	private static void algorithm(String input) {
 		
 		String[] split = input.split(" ");
@@ -67,9 +88,9 @@ public class LogicTask {
 		for (String x : split) {
 			
 			int localCount = 0;
-			boolean[] containsLogic = new boolean[5];
-			for (int i = 0; i < 5; ++i) {
-				containsLogic[i] = false;
+			boolean[] containsChars = new boolean[chars.size()];
+			for (int i = 0; i < chars.size(); ++i) {
+				containsChars[i] = false;
 			}
 			
 			x = x.toLowerCase();
@@ -77,31 +98,15 @@ public class LogicTask {
 			for (int i = 0; i < x.length(); ++i) {
 				char c = x.charAt(i);
 				if (!Character.isLetterOrDigit(c)) trueLen--;
-				else if (c == 'l') {
+				else if (chars.contains(c)) {
 					globalCount++;
 					localCount++;
-					containsLogic[0] = true;
-				} else if (c == 'o') {
-					globalCount++;
-					localCount++;
-					containsLogic[1] = true;
-				} else if (c == 'g') {
-					globalCount++;
-					localCount++;
-					containsLogic[2] = true;
-				} else if (c == 'i') {
-					globalCount++;
-					localCount++;
-					containsLogic[3] = true;
-				} else if (c == 'c') {
-					globalCount++;
-					localCount++;
-					containsLogic[4] = true;
+					containsChars[chars.indexOf(c)] = true;
 				}
 			}
 			
 			if (localCount > 0) {
-				String key = generateKey(containsLogic, trueLen);
+				String key = generateKey(containsChars, trueLen);
 				if (mapa.containsKey(key)) mapa.put(key, mapa.get(key) + localCount);
 				else mapa.put(key, localCount);
 			}
@@ -112,6 +117,10 @@ public class LogicTask {
 		return;
 	}
 	
+	/**
+	 * prepares the output string by calculating and sorting the frequencies
+	 * @return string
+	 */
 	private static String prepareOutput() {
 		
 		outputString = "";
@@ -128,21 +137,27 @@ public class LogicTask {
 					+ " (" + mapa.get(x.getKey()) + "/" + globalCount + ")" + "\n";
 		}
 		
-		outputString += "Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
+		outputString += "Total frequency: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
 				+ " (" + globalCount + "/" + totalCount + ")" + "\n";
 		
 		return outputString;
 	}
 	
-	private static String generateKey(boolean[] containsLogic, int count) {
+	/**
+	 * generates a key for the map based on which chars from the list does it contain and how many
+	 * @param containsChars field that keep track which chars from the list does the word contain
+	 * @param count how many chars from the list does the word contain
+	 * @return return a string that acts as a key, e.g. [l, o, g, 6]
+	 */
+	private static String generateKey(boolean[] containsChars, int count) {
 		
 		String key = "[";
-		if (containsLogic[0]) key = key + "l, ";
-		if (containsLogic[1]) key = key + "o, ";
-		if (containsLogic[2]) key = key + "g, ";
-		if (containsLogic[3]) key = key + "i, ";
-		if (containsLogic[4]) key = key + "c, ";
-		key = key + Integer.toString(count);
+		
+		for (int i = 0; i < chars.size(); ++i) {
+			if (containsChars[i]) key += chars.get(i) + ", ";
+		}
+		
+		key += Integer.toString(count);
 		key += "]";
 		return key;
 	}
