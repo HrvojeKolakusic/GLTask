@@ -61,8 +61,6 @@ public class LogicTask {
 			}
 			
 			totalCount += trueLen;
-
-			
 		}
 		
 		Map<String, Double> freq = new HashMap<>();
@@ -96,5 +94,5 @@ public class LogicTask {
 		key += "]";
 		return key;
 	}
-
+	
 }
