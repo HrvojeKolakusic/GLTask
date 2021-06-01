@@ -8,10 +8,11 @@ import java.util.Map.Entry;
 
 public class LogicTask {
 
-	public static void main(String[] args) {
+	public static String start() {
 		
 		String input = "I love to work in global logic!";
 		String[] split = input.split(" ");
+		String output = "";
 		
 		int globalCount = 0;
 		int totalCount = 0;
@@ -74,11 +75,17 @@ public class LogicTask {
 		for (Entry<String, Double> x : sorted) {
 			System.out.println(x.getKey() + " = " + Math.round(freq.get(x.getKey())*100.0)/100.0
 			+ " (" + mapa.get(x.getKey()) + "/" + globalCount + ")");
+			output += x.getKey() + " = " + Math.round(freq.get(x.getKey())*100.0)/100.0
+					+ " (" + mapa.get(x.getKey()) + "/" + globalCount + ")" + "\n";
 		}
 		
 		
 		System.out.println("Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
 				+ " (" + globalCount + "/" + totalCount + ")");
+		output += "Total freq: " + Math.round(1.0*globalCount/totalCount*100.0)/100.0
+				+ " (" + globalCount + "/" + totalCount + ")" + "\n";
+		
+		return output;
 
 	}
 	
